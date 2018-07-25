@@ -12,20 +12,22 @@ mixer_mic = alsaaudio.Mixer(control='Capture', id=0)
 def callback(data):
     mixer_spk.setmute(0)
     mixer_mic.setrec(0)
-    print("saying " + data.data)  
+  
     lstr = len(data.data)
-    print("str len: "+str(lstr))
 
     soundhandle.say(data.data)
-    delay = lstr * 0.15
+    delay = lstr * 0.125
     time.sleep(delay)
-    print("saying over  " + data.data)
-    mixer_spk.setmute(1)
+
+
     mixer_mic.setrec(1)
+    mixer_spk.setmute(1)
+
+    print("tts - is finished for: " + data.data)
 
     return
 
 soundhandle = SoundClient()
 rospy.init_node("tts",anonymous=True)
-rospy.Subscriber("/hearts/stt", String, callback)
+rospy.Subscriber("/hearts/tts", String, callback)
 rospy.spin()

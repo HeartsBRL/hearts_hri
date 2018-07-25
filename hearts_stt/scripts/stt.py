@@ -11,6 +11,9 @@
 #             - Test Harness mode  (driven by th.py)
 ################################################################################
 # Updates:
+# 04 Jul 2018 Derek - Disable callback2 that listens for tts. The mic/speaker is
+#                     now controlled in tts.py
+#
 # 23 Nov 2017 Deek  - Implement "Python Support Library" ROS package  
 #                     First shared module is tag_topics.py
 #
@@ -69,7 +72,7 @@ class SpeechRecognizer():
     def __init__(self):
 
         # listen to robot speaking
-        rospy.Subscriber("/hearts/tts",String, callback2)
+        #DAR rospy.Subscriber("/hearts/tts",String, callback2)
 
         #  these are out of date - initial 30 day  tial period!!
         self.IBM_USERNAME = "c2db0a18-e3b6-4a21-9ecf-8afd2edeeb30"
