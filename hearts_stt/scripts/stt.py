@@ -54,7 +54,7 @@
 ################################################################################
 
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 #import pocketsphinx
 import speech_recognition as sr   # sudo pip install SpeechRecognition && sudo apt-get install python-pyaudio
 import python_support_library.tag_topics       as TT
@@ -73,6 +73,7 @@ class SpeechRecognizer():
 
         # listen to robot speaking
         #DAR rospy.Subscriber("/hearts/tts",String, callback2)
+        self.listen_toggle = rospy.Subcriber("/hearts/stt_toggle", Bool, self.listen_callback)
 
         #  these are out of date - initial 30 day  tial period!!
         self.IBM_USERNAME = "c2db0a18-e3b6-4a21-9ecf-8afd2edeeb30"
@@ -83,6 +84,10 @@ class SpeechRecognizer():
         self.r = sr.Recognizer() 
         self.r.operation_timeout = 10       
                     
+    def listen_callback(self, in_data):
+        self.run = in_data.data
+                    
+        
     def set_audio_source(self, audio_source):
         self.audio_source = audio_source
         if self.audio_source == self.audio_sources[0]:
@@ -340,8 +345,12 @@ if __name__ == "__main__":
         speech_recognizer.set_audio_source("mic")
         passes = 0
         rate = rospy.Rate(1)
+        
+        speech_recognizer.run = False
 
         while not rospy.is_shutdown():
+           while speech_recognizer.run == False:
+              rospy.sleep(0.1)
 
            rospy.loginfo("***** stt - ROBOT Listening ....: ")            
            audio = speech_recognizer.get_audio_mic(energy_threshold, pause_threshold, dynamic_energy_threshold) 
