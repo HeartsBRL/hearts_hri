@@ -7,14 +7,14 @@
 #          3: added by Derek - also allow for wav file input so that multiple files
 #             can be processed
 #          4: added by Derek - convert to run code entirely under ROS for both
-#             - Normal speech recognition via microphone which listens indefinitely 
+#             - Normal speech recognition via microphone which listens indefinitely
 #             - Test Harness mode  (driven by th.py)
 ################################################################################
 # Updates:
 # 04 Jul 2018 Derek - Disable callback2 that listens for tts. The mic/speaker is
 #                     now controlled in tts.py
 #
-# 23 Nov 2017 Deek  - Implement "Python Support Library" ROS package  
+# 23 Nov 2017 Deek  - Implement "Python Support Library" ROS package
 #                     First shared module is tag_topics.py
 #
 # 23 Nov 2017 Derek/Chris - callback2 added to stop Robot listening to itsself.
@@ -35,26 +35,26 @@
 #
 # 20 Oct 2017 Derek - Tidy up code so that TH & Microphone params can be set
 #                     appropriately for each. Previously ENERGY_THRESHOLD only got applied
-#                     to Microphone ad not to the TH(Test Harness)mode.Hence TH assummed 
-#                     default value of 300.     
+#                     to Microphone ad not to the TH(Test Harness)mode.Hence TH assummed
+#                     default value of 300.
 #
 # 11 Oct 2017 Derek - add command line arg processing:
 #                     * option to wait for speech or listen continuously
-# 
+#
 # 22 Aug 2017 Derek - In speech mode added a "wait to start listening" key
 #
-# 11 Aug 2017 Derek - bug fixes 
+# 11 Aug 2017 Derek - bug fixes
 #
 # 04 Aug 2017 Derek  - Added MONO to STEREO conversion for recored speech data
 #
 # 11 Jul 2017 derek  -Added Mic params as args + remove debug/dev print stmts.
-# 
+#
 # 26 Jun 2017 Derek - add results files for mic input as needed by ERL competition
-#         
+#
 ################################################################################
 
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 #import pocketsphinx
 import speech_recognition as sr   # sudo pip install SpeechRecognition && sudo apt-get install python-pyaudio
 import python_support_library.tag_topics       as TT
@@ -68,33 +68,38 @@ o_tt=TT.tag_topics()
 global_bool = False
 
 class SpeechRecognizer():
-        
+
     def __init__(self):
 
         # listen to robot speaking
         #DAR rospy.Subscriber("/hearts/tts",String, callback2)
+        self.listen_toggle = rospy.Subscriber("/hearts/stt_toggle", Bool, self.listen_callback)
 
         #  these are out of date - initial 30 day  tial period!!
         self.IBM_USERNAME = "c2db0a18-e3b6-4a21-9ecf-8afd2edeeb30"
         self.IBM_PASSWORD = "uAzeboVUvhuP"
-          
+
         self.audio_sources = [ 'mic', 'file' ]
-        self.speech_recognition_engines = [ 'google', 'ibm', 'sphinx', 'google_cloud' ]   
-        self.r = sr.Recognizer() 
-        self.r.operation_timeout = 10       
-                    
+        self.speech_recognition_engines = [ 'google', 'ibm', 'sphinx', 'google_cloud' ]
+        self.r = sr.Recognizer()
+        self.r.operation_timeout = 10
+
+    def listen_callback(self, in_data):
+        self.run = in_data.data
+        rospy.loginfo("stt running = " +str(self.run))
+
     def set_audio_source(self, audio_source):
         self.audio_source = audio_source
         if self.audio_source == self.audio_sources[0]:
             self.init_mic()
-            
+
     def set_speech_recognition_engine(self, speech_recognition_engine):
         self.speech_recognition_engine = speech_recognition_engine
         if self.speech_recognition_engine == self.speech_recognition_engines[2]:
             self.init_sphinx()
         elif self.speech_recognition_engine == self.speech_recognition_engines[3]:
-           self.init_google_cloud() 
-   
+           self.init_google_cloud()
+
     def wait(self):
 
         if len(wait4mic) > 0 :
@@ -106,20 +111,20 @@ class SpeechRecognizer():
             print('\n************************************************')
             print(  '******     Continuous Listening Mode      ******')
             print(  '************************************************\n')
-        
+
     def init_mic(self):
         self.m = sr.Microphone(device_index = None, sample_rate = 41000)
-        
+
     def init_google_cloud(self):
         self.gcp_kwords = gcpk.gcp_keywords_r()
-        
+
     def init_sphinx(self):
         SPHINXPATH =   rospy.get_param("SR_SPHINXPATH")
         # English-US model from 5prealpha
         ##ps_lm    = SPHINXPATH+"model2/en-us-phone.lm.bin"
         ##ps_dict  = SPHINXPATH+"model2/cmudict-en-us.dict"
         ##ps_hmm   = SPHINXPATH+"model2/en-us"
-    
+
         ## English-US model
         ps_lm    = SPHINXPATH+"0885.lm"
         ps_dict  = SPHINXPATH+"0885.dic"
@@ -129,43 +134,43 @@ class SpeechRecognizer():
         ##ps_lm   = SPHINXPATH+"model/en-us.lm.bin"
         ##ps_dict = SPHINXPATH+"model/en_in.dic"
         ##ps_hmm  = SPHINXPATH+"model/en_in.cd_cont_5000"
-    
+
         config = pocketsphinx.Decoder.default_config()
-        config.set_boolean("-remove_noise", False) 
+        config.set_boolean("-remove_noise", False)
         config.set_string("-lm",  ps_lm)  # language_model_file
         config.set_string("-dict",ps_dict) # phoneme_dictionary_file
-        config.set_string("-hmm",ps_hmm) # 
+        config.set_string("-hmm",ps_hmm) #
         decoder = pocketsphinx.Decoder(config)
-        
+
     def recognize_google(self, audio):
         # Google speech API key from Zeke Steer's account
-         
-        #22/06/2017 - Derek - API key failed, but probably 
-        #related to "Cloud" speech , and not the older API    
+
+        #22/06/2017 - Derek - API key failed, but probably
+        #related to "Cloud" speech , and not the older API
 
         # for testing purposes,  using the default API key
         # to use another API key, use:
         # r.recognize_google(audio, key="API_KEY")`
         # instead of `r.recognize_google(audio)`
-        
+
         return self.r.recognize_google(audio, language="en-GB")
-        
+
     def recognize_ibm(self, audio):
-        return self.r.recognize_ibm(audio, username=self.IBM_USERNAME,  password=self.IBM_PASSWORD) 
-    
+        return self.r.recognize_ibm(audio, username=self.IBM_USERNAME,  password=self.IBM_PASSWORD)
+
     def recognize_sphinx(self, audio):
         return self.r.recognize_sphinx(audio)
-    
+
     def recognize_google_cloud(self, audio):
         return self.r.recognize_google_cloud(
             audio,
             credentials_json  = gcpc.gcp_credentials("Zeke"),
             language          ="en-GB",
             preferred_phrases = self.gcp_kwords)
-        
+
     def recognize(self, audio):
         text = None
-        
+
         try:
             if self.speech_recognition_engine == self.speech_recognition_engines[0]:
                 text = self.recognize_google(audio)
@@ -187,58 +192,58 @@ class SpeechRecognizer():
             print ("STT- exception e: ")
             print(e)
         except:
-            print("STT - unknown error")  
-        print("\n") # make screen more readable            
-        if not text is None:    
+            print("STT - unknown error")
+        print("\n") # make screen more readable
+        if not text is None:
             # correctly print unicode characters to standard output
-            
+
             if str is bytes:  # this version of Python (Python 2)
                 print("Py2-You said: {}".format(text).encode("utf-8"))
                 print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n")
             else:  # (Python 3+)
                 print("py3-You said: {}".format(text))
-        
+
         return text
-            
+
     def get_audio_mic(self, energy_threshold, pause_threshold, dynamic_energy_threshold):
         print("Speech engine is: " + self.speech_recognition_engine)
         print("Energy threshold: " + str(energy_threshold))
-        
+
         with self.m as source:
             self.r.adjust_for_ambient_noise(source)
             self.r.dynamic_energy_threshold = dynamic_energy_threshold # default is "True"
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
-            
-            self.wait()          
-            
+
+            self.wait()
+
             print("*** Say something now!")
-            
+
             return self.r.listen(source)
-            
+
     def get_audio_file(self, energy_threshold, pause_threshold, file):
         if (run_mode == 'TH'):  index, barefile = o_tt.get_key(file)
-        with sr.WavFile(barefile) as source:        
+        with sr.WavFile(barefile) as source:
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
 
             return self.r.record(source)       # extract audio data from the file
 
-#####  END OF: class SpeechRecognizer():      
-######################################## 
-     
+#####  END OF: class SpeechRecognizer():
+########################################
+
 def callback(data):
     wav_out_file_path = data.data
     rospy.loginfo(rospy.get_name() + ": Received file: %s", wav_out_file_path)
     audio = speech_recognizer.get_audio_file(energy_threshold, pause_threshold, wav_out_file_path)
     index, wav_out_file_path = o_tt.get_key(wav_out_file_path)
     text  = speech_recognizer.recognize(audio)
-    
+
     if not text is None:
         rospy.loginfo(rospy.get_name() + ": Transcribed text is:\n" + text +
-            "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")     
+            "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         text = o_tt.add_key(index, text)
-        pub.publish(text + '~' + wav_out_file_path) 
+        pub.publish(text + '~' + wav_out_file_path)
 
 def callback2(data):
     text = data.data
@@ -250,10 +255,10 @@ def callback2(data):
         rospy.sleep(0.1)
     global_bool = False
     rospy.loginfo("***** stt - ROBOT has Finished SPEAKING based on delay loop in callback2")
-        
+
 def mono_to_stereo(inputfile):
 # Author: Derek Ripper
-# Date  : 02 Aug 2017 
+# Date  : 02 Aug 2017
 # Purpose: To convert a MONO .wav file to a STEREO .wav file
 # Initial code taken from:
 # https://stackoverflow.com/questions/43162121/python-convert-mono-wave-file-to-stereo
@@ -261,7 +266,7 @@ def mono_to_stereo(inputfile):
     ifile       = wave.open(inputfile)
     numchannels = ifile.getnchannels()
 
-    # convert recorded .wav file to stereo if needed 
+    # convert recorded .wav file to stereo if needed
     if numchannels == 1 :
         print("\nRecorded Wav file converted from Mono to Stereo")
         tempinput  = inputfile+"_temp"
@@ -278,7 +283,7 @@ def mono_to_stereo(inputfile):
         # copy mono data to right channel
         stereo = 2 * left_channel
         stereo[0::2] = stereo[1::2] = left_channel
-        
+
         # rewrite .wav file with stereo characteristcs
         ofile = wave.open(outputfile, 'w')
         ss
@@ -289,7 +294,7 @@ def mono_to_stereo(inputfile):
     else:
         # file aready in stereo
         print("\nRecorded Wav file is in stereo already - No conversion performed.")
-        ifile.close() 
+        ifile.close()
 
 def cmdlineargs():
     import sys
@@ -309,28 +314,28 @@ def cmdlineargs():
 #################################################################################################
 #
 if __name__ == "__main__":
-    
+
     pub = rospy.Publisher("/hearts/stt", String, queue_size = 10)
     rospy.init_node("stt", anonymous = True)
 
     dynamic_energy_threshold = False # default is "True"
     energy_threshold = rospy.get_param("SR_ENERGY_THRESHOLD")
-    pause_threshold = 1.1   # Default is 0.8 secs     
+    pause_threshold = 1.1   # Default is 0.8 secs
     wav_out_folder_path = rospy.get_param("SR_ERL_DATAPATHOUT")
     speech_recognition_engine = rospy.get_param("SR_speechrec_engine")
     run_mode = rospy.get_param("SR_TH")
-    print("*** speech_recognition_engine: " + speech_recognition_engine)  
+    print("*** speech_recognition_engine: " + speech_recognition_engine)
     print("*** Energy threshold         : " + str(energy_threshold))
-    speech_recognizer = SpeechRecognizer()    
-    
+    speech_recognizer = SpeechRecognizer()
+
     if not speech_recognition_engine in speech_recognizer.speech_recognition_engines:
         speech_recognition_engine = speech_recognizer.speech_recognition_engines[0]
-    
+
     speech_recognizer.set_speech_recognition_engine(speech_recognition_engine)
-        
+
     wait4mic = cmdlineargs()
-   
-    if run_mode =="TH": 
+
+    if run_mode =="TH":
         rospy.loginfo(rospy.get_name() + ": audio source is wav file")
         speech_recognizer.set_audio_source("file")
         rospy.Subscriber("Wav_FileIn",String, callback)
@@ -341,10 +346,13 @@ if __name__ == "__main__":
         passes = 0
         rate = rospy.Rate(1)
 
-        while not rospy.is_shutdown():
+        speech_recognizer.run = False
 
-           rospy.loginfo("***** stt - ROBOT Listening ....: ")            
-           audio = speech_recognizer.get_audio_mic(energy_threshold, pause_threshold, dynamic_energy_threshold) 
+        while not rospy.is_shutdown():
+           while speech_recognizer.run == False:
+              rospy.sleep = (0.1)
+           rospy.loginfo("***** stt - ROBOT Listening ....: ")
+           audio = speech_recognizer.get_audio_mic(energy_threshold, pause_threshold, dynamic_energy_threshold)
            rospy.loginfo("***** stt - SPEECH HEARD by ROBOT.....: ")
 
            try:
@@ -357,39 +365,39 @@ if __name__ == "__main__":
                rospy.loginfo("***** stt - ROBOT Speaking")
            if not global_bool:
                rospy.loginfo("***** stt - ROBOT Not Speaking")
-           if not text is None and not global_bool: 
+           if not text is None and not global_bool:
                text = text.strip()
                # provide break out of stt routine
                if text == "stop recording":
                        print("\n***** User command to STOP RECORDING issued *****")
                        print("*****    Use CTRL-C to kill ROS Node \n")
-                       quit() 
+                       quit()
 
-               # ERL Competition mode for spoken phrase recognition 
+               # ERL Competition mode for spoken phrase recognition
                #    (ie wait on ENTER key pressto start recording )
-               if len( wait4mic ) !=0: 
-            
+               if len( wait4mic ) !=0:
+
                    wav_out_file_path = wav_out_folder_path + "fb_mic_phase_speech_audio_" + str(passes) + ".wav"
 
                    with open(wav_out_file_path, "wb") as f:
                        f.write(audio.get_wav_data())
                        f.close()
-            
+
                    # convert recorded .wav file to stereo if needed
-                   mono_to_stereo(wav_out_file_path)           
-               
+                   mono_to_stereo(wav_out_file_path)
+
                    rospy.loginfo(rospy.get_name() + ": Transcribed text is:\n" + text +
-                   "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")                  
+                   "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
                    # this form is needed by t2cfr.py to build ERL results.txt file
-                   pub.publish(text + "~" + wav_out_file_path) 
+                   pub.publish(text + "~" + wav_out_file_path)
 
                # just pure clean text published for continuous listening mode
                else:
-                   pub.publish(text) 
+                   pub.publish(text)
                    # added in Barcelona - wait on topic "/hearts/tts/ before continuing
-                   
+
 
 
         rate.sleep()
 
-rospy.spin()   
+rospy.spin()
