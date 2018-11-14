@@ -11,6 +11,8 @@
 #             - Test Harness mode  (driven by th.py)
 ################################################################################
 # Updates:
+# 14 Nov 2018 Derek - added module "text_colours" to support colour printing to screen
+#
 # 04 Jul 2018 Derek - Disable callback2 that listens for tts. The mic/speaker is
 #                     now controlled in tts.py
 #
@@ -58,13 +60,14 @@ from std_msgs.msg import String
 #import pocketsphinx
 import speech_recognition as sr   # sudo pip install SpeechRecognition && sudo apt-get install python-pyaudio
 import python_support_library.tag_topics       as TT
+import python_support_library.text_colours     as TC      # print text in various colour styles
 import gcp_keywords_r     as gcpk # google cloud platform preferred keyword/sphrases - only used by GCP speech recognition
 import gcp_credentials    as gcpc # google cloud platform credentials to access GCP speech recognition
 
 import wave, array, os            # used by mono_to_stereo()
 
 o_tt=TT.tag_topics()
-
+prt = TC.tc()
 global_bool = False
 
 class SpeechRecognizer():
@@ -159,7 +162,7 @@ class SpeechRecognizer():
     def recognize_google_cloud(self, audio):
         return self.r.recognize_google_cloud(
             audio,
-            credentials_json  = gcpc.gcp_credentials("Zeke"),
+            credentials_json  = gcpc.gcp_credentials("Derek"),
             language          ="en-GB",
             preferred_phrases = self.gcp_kwords)
         
@@ -176,33 +179,33 @@ class SpeechRecognizer():
             elif self.speech_recognition_engine == self.speech_recognition_engines[3]:
                 text = self.recognize_google_cloud(audio)
         except sr.UnknownValueError:
-            print("speech recognition engine could not understand audio")
+            prt.error("speech recognition engine could not understand audio")
             text = 'BAD_RECOGNITION'
         except sr.RequestError as e:
-            print("***** STT - could not request results from speech recognition engine: {0}".format(e))
+            prt.error("***** STT - could not request results from speech recognition engine: {0}".format(e))
         except TypeError:
-            print("****** STT - returned a None Type -- Cannot understand so continue...")
+            prt.info("****** STT - returned a None Type -- Cannot understand so continue...")
             text = 'BAD_RECOGNITION'
         except Exception as e:
-            print ("STT- exception e: ")
-            print(e)
+            prt.error ("STT- exception e: ")
+            prt.error(e)
         except:
-            print("STT - unknown error")  
+            prt.error("STT - unknown error")  
         print("\n") # make screen more readable            
         if not text is None:    
             # correctly print unicode characters to standard output
             
             if str is bytes:  # this version of Python (Python 2)
-                print("Py2-You said: {}".format(text).encode("utf-8"))
+                prt.result("Py2-You said: {}".format(text).encode("utf-8"))
                 print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n")
             else:  # (Python 3+)
-                print("py3-You said: {}".format(text))
+                prt.result("py3-You said: {}".format(text))
         
         return text
             
     def get_audio_mic(self, energy_threshold, pause_threshold, dynamic_energy_threshold):
-        print("Speech engine is: " + self.speech_recognition_engine)
-        print("Energy threshold: " + str(energy_threshold))
+        prt.info("for mic: Speech engine is: " + self.speech_recognition_engine)
+        prt.info("for mic: Energy threshold: " + str(energy_threshold))
         
         with self.m as source:
             self.r.adjust_for_ambient_noise(source)
@@ -217,12 +220,16 @@ class SpeechRecognizer():
             return self.r.listen(source)
             
     def get_audio_file(self, energy_threshold, pause_threshold, file):
+        prt.info("for audio file: Speech engine is: " + self.speech_recognition_engine)
+        prt.info("for audio file: Energy threshold: " + str(energy_threshold))
+
         if (run_mode == 'TH'):  index, barefile = o_tt.get_key(file)
-        with sr.WavFile(barefile) as source:        
+
+        with sr.WavFile(barefile) as source:      
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
 
-            return self.r.record(source)       # extract audio data from the file
+            return self.r.record(source)               # extract audio data from the file
 
 #####  END OF: class SpeechRecognizer():      
 ######################################## 
@@ -319,8 +326,8 @@ if __name__ == "__main__":
     wav_out_folder_path = rospy.get_param("SR_ERL_DATAPATHOUT")
     speech_recognition_engine = rospy.get_param("SR_speechrec_engine")
     run_mode = rospy.get_param("SR_TH")
-    print("*** speech_recognition_engine: " + speech_recognition_engine)  
-    print("*** Energy threshold         : " + str(energy_threshold))
+    prt.info("*** speech_recognition_engine: " + speech_recognition_engine)  
+    prt.info("*** Energy threshold         : " + str(energy_threshold))
     speech_recognizer = SpeechRecognizer()    
     
     if not speech_recognition_engine in speech_recognizer.speech_recognition_engines:
@@ -361,8 +368,8 @@ if __name__ == "__main__":
                text = text.strip()
                # provide break out of stt routine
                if text == "stop recording":
-                       print("\n***** User command to STOP RECORDING issued *****")
-                       print("*****    Use CTRL-C to kill ROS Node \n")
+                       prt.info("\n***** User command to STOP RECORDING issued *****")
+                       prt.info("*****    Use CTRL-C to kill ROS Node \n")
                        quit() 
 
                # ERL Competition mode for spoken phrase recognition 
