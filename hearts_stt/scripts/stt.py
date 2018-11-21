@@ -195,40 +195,24 @@ class SpeechRecognizer():
             prt.error ("STT- exception e: ")
             prt.error(e)
         except:
-<<<<<<< HEAD
-            print("STT - unknown error")
-        print("\n") # make screen more readable
-        if not text is None:
-=======
+
             prt.error("STT - unknown error")
         print("\n") # make screen more readable
         if not text is None:
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
+
             # correctly print unicode characters to standard output
 
             if str is bytes:  # this version of Python (Python 2)
                 prt.result("Py2-You said: {}".format(text).encode("utf-8"))
                 print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n")
             else:  # (Python 3+)
-<<<<<<< HEAD
-                print("py3-You said: {}".format(text))
-
-=======
                 prt.result("py3-You said: {}".format(text))
-
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
         return text
 
     def get_audio_mic(self, energy_threshold, pause_threshold, dynamic_energy_threshold):
-<<<<<<< HEAD
-        print("Speech engine is: " + self.speech_recognition_engine)
-        print("Energy threshold: " + str(energy_threshold))
-
-=======
         prt.info("for mic: Speech engine is: " + self.speech_recognition_engine)
         prt.info("for mic: Energy threshold: " + str(energy_threshold))
 
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
         with self.m as source:
             self.r.adjust_for_ambient_noise(source)
             self.r.dynamic_energy_threshold = dynamic_energy_threshold # default is "True"
@@ -246,12 +230,7 @@ class SpeechRecognizer():
         prt.info("for audio file: Energy threshold: " + str(energy_threshold))
 
         if (run_mode == 'TH'):  index, barefile = o_tt.get_key(file)
-<<<<<<< HEAD
         with sr.WavFile(barefile) as source:
-=======
-
-        with sr.WavFile(barefile) as source:
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
 
@@ -352,17 +331,11 @@ if __name__ == "__main__":
     wav_out_folder_path = rospy.get_param("SR_ERL_DATAPATHOUT")
     speech_recognition_engine = rospy.get_param("SR_speechrec_engine")
     run_mode = rospy.get_param("SR_TH")
-<<<<<<< HEAD
-    print("*** speech_recognition_engine: " + speech_recognition_engine)
-    print("*** Energy threshold         : " + str(energy_threshold))
-    speech_recognizer = SpeechRecognizer()
 
-=======
     prt.info("*** speech_recognition_engine: " + speech_recognition_engine)
     prt.info("*** Energy threshold         : " + str(energy_threshold))
     speech_recognizer = SpeechRecognizer()
 
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
     if not speech_recognition_engine in speech_recognizer.speech_recognition_engines:
         speech_recognition_engine = speech_recognizer.speech_recognition_engines[0]
 
@@ -404,16 +377,9 @@ if __name__ == "__main__":
                text = text.strip()
                # provide break out of stt routine
                if text == "stop recording":
-<<<<<<< HEAD
-                       print("\n***** User command to STOP RECORDING issued *****")
-                       print("*****    Use CTRL-C to kill ROS Node \n")
-                       quit()
-=======
                        prt.info("\n***** User command to STOP RECORDING issued *****")
                        prt.info("*****    Use CTRL-C to kill ROS Node \n")
                        quit()
->>>>>>> 72cca128ff2135a6917b01e06dc397c0c1901b30
-
                # ERL Competition mode for spoken phrase recognition
                #    (ie wait on ENTER key pressto start recording )
                if len( wait4mic ) !=0:
