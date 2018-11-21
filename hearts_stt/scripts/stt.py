@@ -281,7 +281,6 @@ def mono_to_stereo(inputfile):
         
         # rewrite .wav file with stereo characteristcs
         ofile = wave.open(outputfile, 'w')
-        ss
         ofile.setparams((2, sampwidth, framerate, nframes, comptype, compname))
         ofile.writeframes(stereo.tostring())
         ofile.close()
