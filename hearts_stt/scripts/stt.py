@@ -68,13 +68,12 @@ import wave, array, os            # used by mono_to_stereo()
 
 o_tt=TT.tag_topics()
 prt = TC.tc()
-global_bool = False
+# global_bool = False
 
 class SpeechRecognizer():
 
     def __init__(self):
 
-        # listen to robot speaking
         #DAR rospy.Subscriber("/hearts/tts",String, callback2)
         self.listen_toggle = rospy.Subscriber("/hearts/stt_toggle", Bool, self.listen_callback)
 
@@ -89,7 +88,9 @@ class SpeechRecognizer():
 
     def listen_callback(self, in_data):
         self.run = in_data.data
-        rospy.loginfo("stt running = " +str(self.run))
+        rospy.loginfo("stt is listening = " +str(self.run))
+        prt.info("*** stt is listening = "  +str(self.run))
+
 
     def set_audio_source(self, audio_source):
         self.audio_source = audio_source
@@ -106,14 +107,16 @@ class SpeechRecognizer():
     def wait(self):
 
         if len(wait4mic) > 0 :
-            print('\n************************************************')
-            print(  '*** Press the "ENTER" key to start listening ***')
-            print(  '************************************************\n')
+
+            prt.input('\n************************************************')
+            prt.input(  '*** Press the "ENTER" key to start listening ***')
+            prt.input(  '************************************************')
             char = raw_input()
+
         else:
-            print('\n************************************************')
-            print(  '******     Continuous Listening Mode      ******')
-            print(  '************************************************\n')
+            prt.info('\n************************************************')
+            prt.info(  '******     Continuous Listening Mode      ******')
+            prt.info(  '************************************************\n')
 
     def init_mic(self):
         self.m = sr.Microphone(device_index = None, sample_rate = 41000)
@@ -204,7 +207,7 @@ class SpeechRecognizer():
 
             if str is bytes:  # this version of Python (Python 2)
                 prt.result("Py2-You said: {}".format(text).encode("utf-8"))
-                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n")
+                prt.result("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             else:  # (Python 3+)
                 prt.result("py3-You said: {}".format(text))
         return text
@@ -221,7 +224,7 @@ class SpeechRecognizer():
 
             self.wait()
 
-            print("*** Say something now!")
+            prt.input("*** Say something now!")
 
             return self.r.listen(source)
 
@@ -252,16 +255,16 @@ def callback(data):
         text = o_tt.add_key(index, text)
         pub.publish(text + '~' + wav_out_file_path)
 
-def callback2(data):
-    text = data.data
-    global global_bool
-    l = text.split(' ')
-    global_bool = True
-    rospy.loginfo("***** stt - ROBOT SPEAKING in progress")
-    for i in range(len(l)):
-        rospy.sleep(0.1)
-    global_bool = False
-    rospy.loginfo("***** stt - ROBOT has Finished SPEAKING based on delay loop in callback2")
+# def callback2(data):
+#     text = data.data
+#     global global_bool
+#     l = text.split(' ')
+#     global_bool = True
+#     rospy.loginfo("***** stt - ROBOT SPEAKING in progress")
+#     for i in range(len(l)):
+#         rospy.sleep(0.1)
+#     global_bool = False
+#     rospy.loginfo("***** stt - ROBOT has Finished SPEAKING based on delay loop in callback2")
 
 def mono_to_stereo(inputfile):
 # Author: Derek Ripper
@@ -275,7 +278,7 @@ def mono_to_stereo(inputfile):
 
     # convert recorded .wav file to stereo if needed
     if numchannels == 1 :
-        print("\nRecorded Wav file converted from Mono to Stereo")
+        prt.info("\nRecorded Wav file converted from Mono to Stereo")
         tempinput  = inputfile+"_temp"
         outputfile = inputfile
         os.rename(inputfile, tempinput)
@@ -293,14 +296,13 @@ def mono_to_stereo(inputfile):
 
         # rewrite .wav file with stereo characteristcs
         ofile = wave.open(outputfile, 'w')
-        ss
         ofile.setparams((2, sampwidth, framerate, nframes, comptype, compname))
         ofile.writeframes(stereo.tostring())
         ofile.close()
         os.remove(tempinput)
     else:
         # file aready in stereo
-        print("\nRecorded Wav file is in stereo already - No conversion performed.")
+        prt.info("\nRecorded Wav file is in stereo already - No conversion performed.")
         ifile.close()
 
 def cmdlineargs():
@@ -356,24 +358,28 @@ if __name__ == "__main__":
 
         speech_recognizer.run = False
 
+        # if mode is to manually start listening, then toggle will not be used
+        if len( wait4mic ) !=0: 
+            speech_recognizer.run = True
+            
         while not rospy.is_shutdown():
+
            while speech_recognizer.run == False:
               rospy.sleep = (0.1)
-           rospy.loginfo("***** stt - ROBOT Listening ....: ")
+
+           prt.info("*** stt-ROBOT is Listening:")
            audio = speech_recognizer.get_audio_mic(energy_threshold, pause_threshold, dynamic_energy_threshold)
-           rospy.loginfo("***** stt - SPEECH HEARD by ROBOT.....: ")
+           prt.info("*** stt-SPEECH HEARD by ROBOT.")
 
            try:
                text  = speech_recognizer.recognize(audio)
            except Exception, exc:
-               print("Exception from Speech Recogniser")
-               print(exc)
+               prt.error("Exception from Speech Recogniser")
+               prt.error(exc)
+
            passes +=  1
-           if global_bool:
-               rospy.loginfo("***** stt - ROBOT Speaking")
-           if not global_bool:
-               rospy.loginfo("***** stt - ROBOT Not Speaking")
-           if not text is None and not global_bool:
+
+           if not text is None:
                text = text.strip()
                # provide break out of stt routine
                if text == "stop recording":
@@ -401,10 +407,7 @@ if __name__ == "__main__":
                # just pure clean text published for continuous listening mode
                else:
                    pub.publish(text)
-                   # added in Barcelona - wait on topic "/hearts/tts/ before continuing
-
-
-
+                  
         rate.sleep()
 
 rospy.spin()
