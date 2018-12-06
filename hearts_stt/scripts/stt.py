@@ -11,6 +11,13 @@
 #             - Test Harness mode  (driven by th.py)
 ################################################################################
 # Updates:
+# 06 Dec 2018 Derek - For listening to the mic 
+#                     For non continuos listening the wait def move to before the
+#                     mic is initialised. was listening before asking for input!
+#                   
+#                     for all mic work have commented out "adjust for ambient noise"
+#                     hence response time improved.
+#
 # 14 Nov 2018 Derek - added module "text_colours" to support colour printing to screen
 #
 # 04 Jul 2018 Derek - Disable callback2 that listens for tts. The mic/speaker is
@@ -215,14 +222,14 @@ class SpeechRecognizer():
     def get_audio_mic(self, energy_threshold, pause_threshold, dynamic_energy_threshold):
         prt.info("for mic: Speech engine is: " + self.speech_recognition_engine)
         prt.info("for mic: Energy threshold: " + str(energy_threshold))
-
+        self.wait()
         with self.m as source:
-            self.r.adjust_for_ambient_noise(source)
+            #self.r.adjust_for_ambient_noise(source)
             self.r.dynamic_energy_threshold = dynamic_energy_threshold # default is "True"
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
 
-            self.wait()
+ 
 
             prt.input("*** Say something now!")
 
