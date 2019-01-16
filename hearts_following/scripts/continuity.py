@@ -60,7 +60,7 @@ class Continuity():
         self.last_known = msg
         self.pub_best.publish(msg)
             
-         
+    # not actually used currently, delete?     
     def set_last_location(self, point):
         self.last_known.x = point.x
         self.last_known.y = point.y
