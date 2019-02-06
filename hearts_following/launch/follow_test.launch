@@ -1,0 +1,25 @@
+<launch>
+  <!--include file="$(find hearts_face_uniform)/launch/hearts_face_uniform.launch>
+    < <arg name="data_path" value="/home/hearts/tb_ws/src/brl-hearts/hearts_face_uniform/data/" /> >
+    <- <arg name="face_cascade_path" value="/home/hearts/tb_ws/src/brl-hearts/hearts_face_uniform/src/haarcascade_frontalface_alt2.xml" /> >
+    <-arg name="data_path" value="/home/turtlebot/tb_ws/src/brl-hearts/hearts_face_uniform/data/" />
+    <arg name="face_cascade_path" value="/home/turtlebot/tb_ws/src/brl-hearts/hearts_face_uniform/src/haarcascade_frontalface_alt2.xml /->
+  </include-->
+
+  <include file="$(find hearts_tts)/launch/hearts_tts.launch" />
+  <include file="$(find hearts_navigation)/launch/hearts_navigation_navigate.launch">
+    <arg name="map_name" value="brl_post_madrid" />
+  </include>
+  
+  <node name="following" pkg="hearts_following" type="continuity.py" />
+  <node name="vision_stuff" pkg="aggregator" type="final_vision_aggregator.py" />
+  
+  
+<!-- ASK DANIEL TO UNCOMMENT THIS -->
+  <!-- <node name="person_tracking" pkg="aggregator" type="person_tracking_TBM2_controller.py" output="screen"  /> -->
+  <node name="motion_player" pkg="hearts_arm_control" type="motion_player.py" />
+  <rosparam file="$(find hearts_arm_control)/config/hearts_motions.yaml" command="load" />
+  
+
+</launch>
+<!-- todo: picture saver -->
