@@ -9,7 +9,7 @@ import tf
 from std_msgs.msg import Float64, Int16
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped
 
-from hearts_msgs.msg import Points, ConPoint
+from hearts_follow_msgs.msg import Points, ConPoint
 
 
 class Continuity():
