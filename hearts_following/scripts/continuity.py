@@ -17,6 +17,8 @@ class Continuity():
     def __init__(self):
         #subscribers
         self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
+        self.follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status) 
+        
         
         #publishers
         self.pub_best = rospy.Publisher("hearts/navigation/goal_shortcut", PoseStamped, queue_size=1)
