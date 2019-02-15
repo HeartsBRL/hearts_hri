@@ -1,4 +1,5 @@
 <launch>
+  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py" />
   <node name="tiago_tts" pkg="hearts_tts" output="screen" type="tiago_tts.py" />
   <node name="tts" pkg="hearts_tts" output="screen" type="tts.py" />
 </launch>

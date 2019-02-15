@@ -11,6 +11,8 @@
 #             - Test Harness mode  (driven by th.py)
 ################################################################################
 # Updates:
+# 14 Feb 2019 Derek - mot mods to prt.info statements
+#
 # 06 Dec 2018 Derek - For listening to the mic 
 #                     For non continuos listening the wait def move to before the
 #                     mic is initialised. was listening before asking for input!
@@ -115,13 +117,13 @@ class SpeechRecognizer():
 
         if len(wait4mic) > 0 :
 
-            prt.input('\n************************************************')
-            prt.input(  '*** Press the "ENTER" key to start listening ***')
             prt.input(  '************************************************')
+            prt.input(  '*** Press the "ENTER" key to start listening ***')
+            prt.input(  '************************************************\n')
             char = raw_input()
 
         else:
-            prt.info('\n************************************************')
+            prt.info(  '************************************************')
             prt.info(  '******     Continuous Listening Mode      ******')
             prt.info(  '************************************************\n')
 
@@ -199,7 +201,7 @@ class SpeechRecognizer():
         except sr.RequestError as e:
             prt.error("***** STT - could not request results from speech recognition engine: {0}".format(e))
         except TypeError:
-            prt.info("****** STT - returned a None Type -- Cannot understand so continue...")
+            prt.warning("****** STT - returned a None Type -- Cannot understand so continue...")
             text = 'BAD_RECOGNITION'
         except Exception as e:
             prt.error ("STT- exception e: ")
