@@ -38,14 +38,15 @@ class Continuity:
         self.last_known.header.frame_id = "xtion_rgb_optical_frame"
 
     def toggle_callback(self):
-        ''' Listens to the output of the follow_toggle topic and initiates following by subscribing to SOMETHING that starts the whole process'''
+        ''' Listens to the output of the follow_toggle topic
+        and initiates following by subscribing to "hearts/follow_candidates" that starts the whole process'''
         if self.sub_follow_toggle is True:
             print("***** START following *****")
             self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity) #TODO check this is the right one
 
-
-
-
+        else:
+            self.sub_poses.unregister()
+            self.sub_poses = 'Null'
 
 
 
