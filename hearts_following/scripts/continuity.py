@@ -5,7 +5,7 @@
 
 import rospy
 import math
-import tf 
+import tf
 from std_msgs.msg import Float64, Int16
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped
 
@@ -16,24 +16,34 @@ class Continuity():
 
     def __init__(self):
         #subscribers
-        self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
-        self.follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status) 
-        
-        
+        #self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
+        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status)
+
+
         #publishers
         self.pub_best = rospy.Publisher("hearts/navigation/goal_shortcut", PoseStamped, queue_size=1)
-        
         self.pub_obj_detect = rospy.Publisher("hearts/obj_on", Int16, queue_size=1)
-        
+
         #transform listener for conversion to real-world coords
         self.listener = tf.TransformListener()
-        
+
         #init vars
         self.last_known = PointStamped()
         self.last_known.point.x = 0
         self.last_known.point.y = 0
         self.last_known.point.z = 0
         self.last_known.header.frame_id = "map"
+
+    def toggle_callback(self):
+        ''' Listens to the output of the follow_toggle topic and initiates following by subscribing to SOMETHING that starts the whole process'''
+        if self.sub_follow_toggle is True:
+            print("***** START following *****")
+            self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity) #TODO check this is the right one
+
+
+
+
+
 
 
     def point_distance(self, p1, p2):
@@ -62,7 +72,7 @@ class Continuity():
             if dist < best_dist:
                 best_dist = dist
                 best_index = x
-                
+
         #find tiago's position & orientation in map coords
         (pos,ori) = listener.lookupTransform("/map","/base_footprint",rospy.Time())
         #create PointStamped message to save as last known location and publish for other nodes to use
@@ -75,8 +85,8 @@ class Continuity():
         msg.header.frame_id = "xtion_rgb_optical_frame"
         self.last_known.point = bestpoint
         self.pub_best.publish(msg)
-            
-    # not actually used currently, delete?     
+
+    # not actually used currently, delete?
     def set_last_location(self, point):
         self.last_known.x = point.x
         self.last_known.y = point.y
@@ -92,4 +102,3 @@ if __name__ == '__main__':
     #msg.data = 1
     #self.pub_obj_detect.publish(msg)
     rospy.spin()
-
