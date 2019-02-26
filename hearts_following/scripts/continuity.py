@@ -8,6 +8,12 @@ import math
 import tf
 from std_msgs.msg import Float64, Int16, String, Bool, Int32
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
+<<<<<<< HEAD
+=======
+import python_support_library.text_colours as TC
+
+
+>>>>>>> 4a0707b6cf0bcf631516642fdd6e20f0875da508
 from hearts_follow_msgs.msg import Points, ConPoint
 
 
@@ -40,8 +46,8 @@ class Continuity:
     def toggle_callback(self, x):
         ''' Listens to the output of the follow_toggle topic
         and initiates following by subscribing to "hearts/follow_candidates" that starts the whole process'''
-        rospy.loginfo('help')
-        rospy.loginfo("x =" +(str(x.data)))
+        #rospy.loginfo('help')
+        #rospy.loginfo("x =" +(str(x.data)))
 
         if x.data == True:
             rospy.loginfo("***** START following *****")
@@ -106,9 +112,8 @@ class Continuity:
         goal = self.listener.transformPoint("map", msg)
 
         twoD = Pose2D()
-        twoD.x = goal.point.x
-        twoD.y = goal.point.y
-
+        twoD.x = (2*(goal.point.x + pos[0])/3)
+        twoD.y = (2*(goal.point.y + pos[1])/3)
         euler = tf.transformations.euler_from_quaternion(ori)
         twoD.theta = euler[2] + angle
         print(twoD)
