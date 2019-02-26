@@ -6,10 +6,8 @@
 import rospy
 import math
 import tf
-from std_msgs.msg import Float64, Int16, String, Bool
+from std_msgs.msg import Float64, Int16, String, Bool, Int32
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
-
-
 from hearts_follow_msgs.msg import Points, ConPoint
 
 
@@ -18,6 +16,7 @@ class Continuity:
     def __init__(self):
         #subscribers
         #self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
+        rospy.loginfo("**************************************************************Ima bastard")
         self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, self.toggle_callback)
 
 
@@ -37,14 +36,19 @@ class Continuity:
         self.last_known.point.z = 0
         self.last_known.header.frame_id = "xtion_rgb_optical_frame"
 
-    def toggle_callback(self):
+
+    def toggle_callback(self, x):
         ''' Listens to the output of the follow_toggle topic
         and initiates following by subscribing to "hearts/follow_candidates" that starts the whole process'''
-        if self.sub_follow_toggle is True:
-            print("***** START following *****")
+        rospy.loginfo('help')
+        rospy.loginfo("x =" +(str(x.data)))
+
+        if x.data == True:
+            rospy.loginfo("***** START following *****")
             self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity) #TODO check this is the right one
 
         else:
+            rospy.loginfo("***** STOP following *****")
             self.sub_poses.unregister()
             self.sub_poses = 'Null'
 
@@ -104,8 +108,8 @@ class Continuity:
         twoD = Pose2D()
         twoD.x = goal.point.x
         twoD.y = goal.point.y
-        quaternion = [ori.x,ori.y,ori.z,ori.w]
-        euler = tf.transformations.euler_from_quaternion(quaternion)
+
+        euler = tf.transformations.euler_from_quaternion(ori)
         twoD.theta = euler[2] + angle
         print(twoD)
         self.last_known.point = bestpoint.point
