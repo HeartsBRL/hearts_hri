@@ -18,7 +18,7 @@ class Continuity:
     def __init__(self):
         #subscribers
         #self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
-        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status)
+        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, self.toggle_callback)
 
 
         #publishers
@@ -68,6 +68,10 @@ class Continuity:
         length = len(things.points)
         best_dist = 99999999
         best_index = 0
+
+        #find tiago's position & orientation in map coords
+        (pos,ori) = self.listener.lookupTransform("/base_footprint","/map",rospy.Time())
+
         # Loop through finding distance for each point
         for x in range(0,length):
             dist = self.point_distance(things.points[x].point, self.last_known.point)
@@ -77,9 +81,8 @@ class Continuity:
                 best_dist = dist
                 best_index = x
 
-        #find tiago's position & orientation in map coords
 
-        #create PointStamped message to save as last known location and publish for other nodes to use
+        #create PointStamped message to save as last known location for other nodes to use
         msg = PointStamped()
         goal = PointStamped()
         print(best_index)
@@ -90,17 +93,19 @@ class Continuity:
         #msg.pose.orientation = ori
         msg.header.frame_id = "xtion_rgb_optical_frame"
 
-        angle = math.atan2(msg.point.z,msg.point.y)
+        angle = math.atan2(msg.point.y,msg.point.z)
         if angle > math.pi:
             angle = -(math.pi - angle)
         #print(msg)
+
+        #transform into map coords for movement
         goal = self.listener.transformPoint("map", msg)
 
-        (pos,ori) = self.listener.lookupTransform("/base_footprint","/map",rospy.Time())
         twoD = Pose2D()
         twoD.x = goal.point.x
         twoD.y = goal.point.y
-        euler = tf.transformations.euler_from_quaternion(ori)
+        quaternion = [ori.x,ori.y,ori.z,ori.w]
+        euler = tf.transformations.euler_from_quaternion(quaternion)
         twoD.theta = euler[2] + angle
         print(twoD)
         self.last_known.point = bestpoint.point
@@ -111,7 +116,7 @@ class Continuity:
         self.pub_best.publish(twoD)
 
 
-    # not actually used currently, delete?
+    # TODO not actually used currently, delete?
     def set_last_location(self, point):
         self.last_known.x = point.x
         self.last_known.y = point.y
