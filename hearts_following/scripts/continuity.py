@@ -18,7 +18,7 @@ class Continuity:
     def __init__(self):
         #subscribers
         #self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
-        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status)
+        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, self.status)
 
 
         #publishers
