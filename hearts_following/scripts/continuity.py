@@ -6,7 +6,7 @@
 import rospy
 import math
 import tf
-from std_msgs.msg import Float64, Int16, String
+from std_msgs.msg import Float64, Int16, String, Bool
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
 
 from hearts_follow_msgs.msg import Points, ConPoint
