@@ -9,6 +9,7 @@ import tf
 from std_msgs.msg import Float64, Int16, String, Bool
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
 
+
 from hearts_follow_msgs.msg import Points, ConPoint
 
 
@@ -16,15 +17,15 @@ class Continuity:
 
     def __init__(self):
         #subscribers
-        self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
-        self.follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status)
+        #self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity)
+        self.sub_follow_toggle = rospy.Subscriber("hearts/follow_toggle", Bool, status)
 
 
         #publishers
         self.pub_best = rospy.Publisher("hearts/navigation/goal", Pose2D, queue_size=1)
         self.clear_movement = rospy.Publisher("hearts/navigation/stop", String, queue_size=1)
-
         #self.pub_obj_detect = rospy.Publisher("hearts/obj_on", Int16, queue_size=1)
+
 
         #transform listener for conversion to real-world coords
         self.listener = tf.TransformListener()
@@ -35,6 +36,18 @@ class Continuity:
         self.last_known.point.y = 0
         self.last_known.point.z = 0
         self.last_known.header.frame_id = "xtion_rgb_optical_frame"
+
+    def toggle_callback(self):
+        ''' Listens to the output of the follow_toggle topic
+        and initiates following by subscribing to "hearts/follow_candidates" that starts the whole process'''
+        if self.sub_follow_toggle is True:
+            print("***** START following *****")
+            self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity) #TODO check this is the right one
+
+        else:
+            self.sub_poses.unregister()
+            self.sub_poses = 'Null'
+
 
 
     def point_distance(self, p1, p2):
@@ -76,6 +89,7 @@ class Continuity:
         msg.point.z = bestpoint.point.z
         #msg.pose.orientation = ori
         msg.header.frame_id = "xtion_rgb_optical_frame"
+
         angle = math.atan2(msg.point.z,msg.point.y)
         if angle > math.pi:
             angle = -(math.pi - angle)
@@ -95,6 +109,7 @@ class Continuity:
         self.clear_movement.publish(stop)
         rospy.sleep(0.01)
         self.pub_best.publish(twoD)
+
 
     # not actually used currently, delete?
     def set_last_location(self, point):
