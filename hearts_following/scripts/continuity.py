@@ -102,8 +102,8 @@ class Continuity:
         goal = self.listener.transformPoint("map", msg)
 
         twoD = Pose2D()
-        twoD.x = (3 * (goal.point.x + pos[0])/3)
-        twoD.y = (3 * (goal.point.y + pos[1])/3)
+        twoD.x = (2*(goal.point.x + pos[0])/3)
+        twoD.y = (2*(goal.point.y + pos[1])/3)
         euler = tf.transformations.euler_from_quaternion(ori)
         twoD.theta = euler[2] + angle
         print(twoD)
