@@ -8,6 +8,7 @@ import math
 import tf
 from std_msgs.msg import Float64, Int16, String
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
+import python_support_library.text_colours as TC
 
 
 from hearts_follow_msgs.msg import Points, ConPoint
@@ -41,7 +42,7 @@ class Continuity:
         ''' Listens to the output of the follow_toggle topic
         and initiates following by subscribing to "hearts/follow_candidates" that starts the whole process'''
         if self.sub_follow_toggle is True:
-            print("***** START following *****")
+            prt.debug("***** START following *****")
             self.sub_poses = rospy.Subscriber("hearts/follow_candidates", Points, self.measure_continuity) #TODO check this is the right one
 
         else:
