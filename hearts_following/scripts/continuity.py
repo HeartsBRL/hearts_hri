@@ -8,12 +8,9 @@ import math
 import tf
 from std_msgs.msg import Float64, Int16, String, Bool, Int32
 from geometry_msgs.msg import Point, PointStamped, Quaternion, PoseStamped, Pose2D
-<<<<<<< HEAD
-=======
+
 import python_support_library.text_colours as TC
 
-
->>>>>>> 4a0707b6cf0bcf631516642fdd6e20f0875da508
 from hearts_follow_msgs.msg import Points, ConPoint
 
 
