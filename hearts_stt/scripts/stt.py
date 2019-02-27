@@ -13,10 +13,10 @@
 # Updates:
 # 14 Feb 2019 Derek - mot mods to prt.info statements
 #
-# 06 Dec 2018 Derek - For listening to the mic 
+# 06 Dec 2018 Derek - For listening to the mic
 #                     For non continuos listening the wait def move to before the
 #                     mic is initialised. was listening before asking for input!
-#                   
+#
 #                     for all mic work have commented out "adjust for ambient noise"
 #                     hence response time improved.
 #
@@ -231,7 +231,7 @@ class SpeechRecognizer():
             self.r.energy_threshold = energy_threshold
             self.r.pause_threshold = pause_threshold   # Default is 0.8 secs
 
- 
+
 
             prt.input("*** Say something now!")
 
@@ -368,9 +368,9 @@ if __name__ == "__main__":
         speech_recognizer.run = False
 
         # if mode is to manually start listening, then toggle will not be used
-        if len( wait4mic ) !=0: 
+        if len( wait4mic ) !=0:
             speech_recognizer.run = True
-            
+
         while not rospy.is_shutdown():
 
            while speech_recognizer.run == False:
@@ -384,7 +384,8 @@ if __name__ == "__main__":
                text  = speech_recognizer.recognize(audio)
            except Exception, exc:
                prt.error("Exception from Speech Recogniser")
-               prt.error(exc)
+               #prt.error(str(exc))
+               print exc
 
            passes +=  1
 
@@ -416,7 +417,7 @@ if __name__ == "__main__":
                # just pure clean text published for continuous listening mode
                else:
                    pub.publish(text)
-                  
+
         rate.sleep()
 
 rospy.spin()
