@@ -12,6 +12,7 @@
   </include>
 
   <node name="following" pkg="hearts_following" type="continuity.py" />
+  <node name="point_broadcast" pkg="aggregator" type="point_broadcaster.py" />
   <include file="$(find cob_people_object_detection_tensorflow)/launch/alltogether.launch"/>
 
 <!-- ASK DANIEL TO UNCOMMENT THIS -->
