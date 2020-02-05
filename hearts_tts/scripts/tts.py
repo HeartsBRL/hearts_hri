@@ -17,14 +17,19 @@ mixer_spk = alsaaudio.Mixer(control='Master', id=0)
 #print("alsaaudio module path is:\n"+p+"\n")
 
 def callback(data):
+    print("###### in tts callback #####")
     mixer_spk.setmute(0)
     #mixer_mic.setrec(0)
 
     lstr = len(data.data)
-   
-    soundhandle.say(data.data)
-  
-    #delay = lstr * 0.125
+    print("***** BEfore soundhandle")
+    soundhandle.say(data.data,blocking=True)
+    #soundhandle.say(data.data)
+    print("***** AFTER  soundhandle")
+    rospy.sleep(0.5)
+    pub_tts_finished.publish("tts_finished") 
+
+    #delay = lstr * 0.07
     #time.sleep(delay)
 
 
@@ -37,7 +42,12 @@ def callback(data):
 
     return
 
+
+pub_tts_finished = rospy.Publisher("/hearts/tts_finished", String, queue_size = 10)
 soundhandle = SoundClient()
+
 rospy.init_node("tts",anonymous=True)
+print("###### Before callback to hearts\tts")
 rospy.Subscriber("/hearts/tts", String, callback)
+print("###### AFTER  callback to hearts\tts")
 rospy.spin()
