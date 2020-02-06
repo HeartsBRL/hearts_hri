@@ -97,8 +97,8 @@ class SpeechRecognizer():
 
     def listen_callback(self, in_data):
         self.run = in_data.data
-        rospy.loginfo("stt is listening = " +str(self.run))
-        prt.info("*** stt is listening = "  +str(self.run))
+        rospy.loginfo("***STT: is listening = " +str(self.run))
+        prt.info("***STT: is listening = "  +str(self.run))
 
 
     def set_audio_source(self, audio_source):
@@ -117,15 +117,15 @@ class SpeechRecognizer():
 
         if len(wait4mic) > 0 :
 
-            prt.input(  '************************************************')
-            prt.input(  '*** Press the "ENTER" key to start listening ***')
-            prt.input(  '************************************************\n')
+            prt.input(  '***STT: ************************************************')
+            prt.input(  '***STT: *** Press the "ENTER" key to start listening ***')
+            prt.input(  '***STT: ************************************************\n')
             char = raw_input()
 
         else:
-            prt.info(  '************************************************')
-            prt.info(  '******     Continuous Listening Mode      ******')
-            prt.info(  '************************************************\n')
+            prt.info(  '***STT: ************************************************')
+            prt.info(  '***STT: ******     Continuous Listening Mode      ******')
+            prt.info(  '***STT: ************************************************\n')
 
     def init_mic(self):
         self.m = sr.Microphone(device_index = None, sample_rate = 41000)
@@ -196,34 +196,34 @@ class SpeechRecognizer():
             elif self.speech_recognition_engine == self.speech_recognition_engines[3]:
                 text = self.recognize_google_cloud(audio)
         except sr.UnknownValueError:
-            prt.error("speech recognition engine could not understand audio")
+            prt.error("***STT: speech recognition engine could not understand audio")
             text = 'BAD_RECOGNITION'
         except sr.RequestError as e:
-            prt.error("***** STT - could not request results from speech recognition engine: {0}".format(e))
+            prt.error("***STT: could not request results from speech recognition engine: {0}".format(e))
         except TypeError:
-            prt.warning("****** STT - returned a None Type -- Cannot understand so continue...")
+            prt.warning("***STT: returned a None Type -- Cannot understand so continue...")
             text = 'BAD_RECOGNITION'
         except Exception as e:
             prt.error ("STT- exception e: ")
             prt.error(e)
         except:
 
-            prt.error("STT - unknown error")
+            prt.error("***STT:  - unknown error")
         print("\n") # make screen more readable
         if not text is None:
 
             # correctly print unicode characters to standard output
 
             if str is bytes:  # this version of Python (Python 2)
-                prt.result("Py2-You said: {}".format(text).encode("utf-8"))
+                prt.result("***STT: Py2-You said: {}".format(text).encode("utf-8"))
                 prt.result("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             else:  # (Python 3+)
-                prt.result("py3-You said: {}".format(text))
+                prt.result("***STT: spy3-You said: {}".format(text))
         return text
 
     def get_audio_mic(self, energy_threshold, pause_threshold, dynamic_energy_threshold):
-        prt.info("for mic: Speech engine is: " + self.speech_recognition_engine)
-        prt.info("for mic: Energy threshold: " + str(energy_threshold))
+        prt.info("***STT: for mic: Speech engine is: " + self.speech_recognition_engine)
+        prt.info("***STT: for mic: Energy threshold: " + str(energy_threshold))
         self.wait()
         with self.m as source:
             #self.r.adjust_for_ambient_noise(source)
@@ -233,13 +233,13 @@ class SpeechRecognizer():
 
  
 
-            prt.input("*** Say something now!")
+            prt.input("***STT: Say something now!")
 
             return self.r.listen(source)
 
     def get_audio_file(self, energy_threshold, pause_threshold, file):
-        prt.info("for audio file: Speech engine is: " + self.speech_recognition_engine)
-        prt.info("for audio file: Energy threshold: " + str(energy_threshold))
+        prt.info("***STT: for audio file: Speech engine is: " + self.speech_recognition_engine)
+        prt.info("***STT: for audio file: Energy threshold: " + str(energy_threshold))
 
         if (run_mode == 'TH'):  index, barefile = o_tt.get_key(file)
         with sr.WavFile(barefile) as source:
@@ -287,7 +287,7 @@ def mono_to_stereo(inputfile):
 
     # convert recorded .wav file to stereo if needed
     if numchannels == 1 :
-        prt.info("\nRecorded Wav file converted from Mono to Stereo")
+        prt.info("\n***STT: Recorded Wav file converted from Mono to Stereo")
         tempinput  = inputfile+"_temp"
         outputfile = inputfile
         os.rename(inputfile, tempinput)
@@ -311,7 +311,7 @@ def mono_to_stereo(inputfile):
         os.remove(tempinput)
     else:
         # file aready in stereo
-        prt.info("\nRecorded Wav file is in stereo already - No conversion performed.")
+        prt.info("\n***STT: Recorded Wav file is in stereo already - No conversion performed.")
         ifile.close()
 
 def cmdlineargs():
@@ -343,8 +343,8 @@ if __name__ == "__main__":
     speech_recognition_engine = rospy.get_param("SR_speechrec_engine")
     run_mode = rospy.get_param("SR_TH")
 
-    prt.info("*** speech_recognition_engine: " + speech_recognition_engine)
-    prt.info("*** Energy threshold         : " + str(energy_threshold))
+    prt.info("***STT: speech_recognition_engine: " + speech_recognition_engine)
+    prt.info("***STT: Energy threshold         : " + str(energy_threshold))
     speech_recognizer = SpeechRecognizer()
 
     if not speech_recognition_engine in speech_recognizer.speech_recognition_engines:
@@ -376,14 +376,14 @@ if __name__ == "__main__":
            while speech_recognizer.run == False:
               rospy.sleep = (0.1)
 
-           prt.info("*** stt-ROBOT is Listening:")
+           prt.info("***STT: ROBOT is Listening:")
            audio = speech_recognizer.get_audio_mic(energy_threshold, pause_threshold, dynamic_energy_threshold)
-           prt.info("*** stt-SPEECH HEARD by ROBOT.")
+           prt.info("***STT: SPEECH HEARD by ROBOT.")
 
            try:
                text  = speech_recognizer.recognize(audio)
            except Exception, exc:
-               prt.error("Exception from Speech Recogniser")
+               prt.error("***STT: Exception from Speech Recogniser")
                prt.error(exc)
 
            passes +=  1
@@ -392,8 +392,8 @@ if __name__ == "__main__":
                text = text.strip()
                # provide break out of stt routine
                if text == "stop recording":
-                       prt.info("\n***** User command to STOP RECORDING issued *****")
-                       prt.info("*****    Use CTRL-C to kill ROS Node \n")
+                       prt.info("\n***STT: User command to STOP RECORDING issued *****")
+                       prt.info("***STT: Use CTRL-C to kill ROS Node \n")
                        quit()
                # ERL Competition mode for spoken phrase recognition
                #    (ie wait on ENTER key pressto start recording )
