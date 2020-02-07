@@ -205,7 +205,7 @@ class SpeechRecognizer():
             text = 'BAD_RECOGNITION'
         except Exception as e:
             prt.error ("STT- exception e: ")
-            prt.error(e)
+            print(e)
         except:
 
             prt.error("***STT:  - unknown error")
